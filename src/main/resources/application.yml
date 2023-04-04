@@ -1,0 +1,73 @@
+server:
+  port: 9020
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+      #defaultZone: http://eureka-server:8761/eureka
+#    enabled: false
+spring:
+  application:
+    name: server-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: ms-customer
+          uri: lb://MS-CUSTOMER
+          predicates:
+            - Path=/customer/**
+        - id: ms-account
+          uri: lb://MS-ACCOUNT
+          predicates:
+            - Path=/account/**
+        - id: ms-credit
+          uri: lb://MS-CREDIT
+          predicates:
+            - Path=/credit/**
+        - id: ms-transaction
+          uri: lb://MS-TRANSACTION
+          predicates:
+            - Path=/transaction/**
+        - id: ms-payment
+          uri: lb://MS-PAYMENT
+          predicates:
+            - Path=/payment/**
+        - id: ms-movement
+          uri: lb://MS-MOVEMENT
+          predicates:
+            - Path=/movements/**
+        - id: ms-report
+          uri: lb://MS-REPORT
+          predicates:
+            - Path=/report/**
+        - id: ms-consume
+          uri: lb://MS-CONSUME
+          predicates:
+            - Path=/consume/**
+        - id: ms-yanki
+          uri: lb://MS-YANKI
+          predicates:
+            - Path=/yanki/**
+resilience4j:
+  circuitbreaker:
+    configs:
+      #nombre-referencial:
+      default:
+        sliding-window-size: 6 # cantidad de casos evaluados
+        failure-rate-threshold: 50 # umbral %
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 4 # llamadas permitidas en el estado semiabierto, el umbral se aplica aca tambien
+        slow-call-rate-threshold: 50 # 5 - % de sliding-window-size
+        slow-call-duration-threshold: 2s # 6 - con este tiempo ya es considerado lento
+        # para estos indices si 3 llamadas demora 2 segundos el circuito se abre y elservicio no responde
+    instances:
+      ms-customer:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+    instances:
+      client2:
+        base-config: default
